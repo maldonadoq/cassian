@@ -24,7 +24,6 @@
 "-="		return(tsubAssign);
 "*="		return(tmulAssign);
 "/="		return(tdivAssign);
-"%="		return(tmodAssign);
 "for"		return(tfor);
 "switch"	return(tswitch);
 "case"		return(tcase);
