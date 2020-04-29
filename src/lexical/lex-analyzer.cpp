@@ -66,7 +66,7 @@ int getIntNum(char firstCh){
     return num;
 }
 
-class TokenType{
+class Token{
 public:
     int number;
     union {
@@ -74,22 +74,22 @@ public:
         int num;        
     } value;
 
-    TokenType(){}
+    Token(){}
 };
 
-class LexicalAnalyzer{
+class Lexer{
 public:
-    LexicalAnalyzer();
+    Lexer();
 
-    TokenType scanner();
+    Token scanner();
     void lexError(int);
 };
 
-LexicalAnalyzer::LexicalAnalyzer(){
+Lexer::Lexer(){
 
 }
 
-void LexicalAnalyzer::lexError(int n){
+void Lexer::lexError(int n){
     cout << "Lexical Error: ";
 
     switch (n){
@@ -110,8 +110,8 @@ void LexicalAnalyzer::lexError(int n){
     }
 }
 
-TokenType LexicalAnalyzer::scanner(){
-    TokenType token;
+Token Lexer::scanner(){
+    Token token;
     int i;
     int idx;
     char ch;
@@ -123,8 +123,6 @@ TokenType LexicalAnalyzer::scanner(){
     do{
         // Space
         while(isspace(ch = getchar()));
-
-        //cout << ch << endl;
 
         // Identifier or Keyword
         if(isWord(ch)){
@@ -145,7 +143,7 @@ TokenType LexicalAnalyzer::scanner(){
             
             for(idx = 0; idx<NO_KEYWORDS; idx++){
                 if(!strcmp(id, keyword[idx])){
-                    cout << id << endl;
+                    // cout << id << endl;
                     break;
                 }
             }
@@ -254,8 +252,8 @@ int main(int argc, char const *argv[]){
         return -1;
     }
 
-    LexicalAnalyzer lex = LexicalAnalyzer();
-    TokenType token = lex.scanner();
+    Lexer lex = Lexer();
+    Token token = lex.scanner();
 
     while(token.number != teof){
         if(token.number == tident){
