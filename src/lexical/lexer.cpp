@@ -1,95 +1,24 @@
-#include <cstring>
-#include <iostream>
+#include "lexer.h"
 
-#define NO_KEYWORDS 7
-#define ID_SIZE 12
-
-using std::cout;
-using std::endl;
-
-enum tSymbol {
-    tnull = -1,
-    tnot, tnoteq, tident, tnumber, tand, tlparen,
-    trparen, tmul, tplus, tcomma, tminus, tdiv,
-    tsemicolon, tless, tlesse, tassign, tequal, tgreat,
-    tgreate, tlbracket, trbracket, teof, tconst, telse,
-    tif, tint, treturn, tvoid, twhile, tlbrace,
-    tor, trbrace
-};
-
-const char * symbol_token[] = {
-    "!", "!=", "NULL", "NULL", "&&", "(",
-    ")", "*", "+", ",", "-", "/",
-    ";", "<", "<=", "=", "==", ">",
-    ">=", "[", "]", "", "const", "else",
-    "if", "int", "return", "void", "while", "{",
-    "||", "}"
-};
-
-const char *keyword[NO_KEYWORDS] = {
-    "const", "else", "if", "int", "return", "void", "while"
-};
-
-enum tSymbol tnum[NO_KEYWORDS] = {
-    tconst, telse, tif, tint, treturn, tvoid, twhile
-};
-
-int isWord(char ch){
-    if(isalpha(ch) || ch == '_')
-        return 1;
-    
-    return 0;
-}
-
-int isWordOrDigit(char ch){
-    if(isalnum(ch) || ch == '_')
-        return 1;
-    
-    return 0;
-}
-
-int getIntNum(char firstCh){
-    int num = 0;
-    char ch;
-
-    if(firstCh != '0'){
-        ch = firstCh;
-
-        do{
-            num = 10 * num + (int) (ch - '0');
-            ch = getchar();
-        } while (isdigit(ch));
-
-        ungetc(ch, stdin);
-    }
-
-    return num;
-}
-
-class Token{
-public:
-    int number;
-    union {
-        char id[ID_SIZE];
-        int num;        
-    } value;
-
-    Token(){}
-};
-
-class Lexer{
-public:
-    Lexer();
-
-    Token scanner();
-    void lexError(int);
-};
 
 Lexer::Lexer(){
 
 }
 
-void Lexer::lexError(int n){
+Lexer::Lexer(string text){
+    this->text = text;
+    this->pos = -1;
+    
+    advance();
+
+}
+
+void Lexer::advance(){
+    pos = -1;
+    current = 
+}
+
+void Lexer::isError(int n){
     cout << "Lexical Error: ";
 
     switch (n){
@@ -239,35 +168,4 @@ Token Lexer::scanner(){
     } while (token.number == tnull);
 
     return token;
-}
-
-int main(int argc, char const *argv[]){
-    if(argc != 2){
-        cout << "Input Error: Must have two parameters\n";
-        return -1;
-    }
-
-    if(freopen(argv[1], "rb", stdin) == NULL){
-        cout << "Read Error: Invalid File Path\n";
-        return -1;
-    }
-
-    Lexer lex = Lexer();
-    Token token = lex.scanner();
-
-    while(token.number != teof){
-        if(token.number == tident){
-            cout << token.value.id << " " << token.number << "\n";
-        }
-        else if(token.number == tnumber){
-            cout << token.value.num << " " << token.number << "\n";
-        }
-        else{
-            cout << symbol_token[token.number] << " " << token.number << " " << token.value.num << "\n";
-        }
-
-        token = lex.scanner();
-    }
-    
-    return 0;
 }
