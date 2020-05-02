@@ -10,6 +10,7 @@ class Type(enum.Enum):
 	tdiv = 6
 	tlpar = 7
 	trpar = 8
+	teof = 9
 
 
 class Token:
@@ -19,7 +20,7 @@ class Token:
 
 		if(_pos_start):
 			self.pos_start = _pos_start.copy()
-			self.pos_end =_pos_end.copy()
+			self.pos_end =_pos_start.copy()
 			self.pos_end.advance()
 
 		if(_pos_end):

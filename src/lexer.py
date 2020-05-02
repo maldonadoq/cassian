@@ -27,6 +27,7 @@ class Lexer:
 	def getNumber(self):
 		num = ''
 		dot = 0
+		pos_start = self.pos.copy()
 
 		while(self.current_char != None and self.current_char in digits+'.'):
 			if(self.current_char == '.'):
@@ -41,9 +42,9 @@ class Lexer:
 			self.advance()
 
 		if(dot == 0):
-			return Token(Type.tint.name, int(num))
+			return Token(Type.tint.name, int(num), pos_start, self.pos)
 		else:
-			return Token(Type.tfloat.name, float(num))
+			return Token(Type.tfloat.name, float(num), pos_start, self.pos)
 
 	def scanner(self, _fn, _text):
 		self.clear(_fn, _text)
@@ -78,4 +79,5 @@ class Lexer:
 				self.advance()
 				return [], IllegalCharError(pos_start, self.pos, "'" + ch + "'")
 
+		tokens.append(Token(Type.teof.name, _pos_start=self.pos))
 		return tokens, None

@@ -1,15 +1,15 @@
 from .token import Type
-from .node import NumberNode, BinOpNode
+from .node import NumberNode, BinOpNode, UnaryOpNode
 from .error import InvalidSyntaxError
 
 class ParseResult:
 	def __init__(self):
 		self.error = None
-		self.node = Nones
+		self.node = None
 
 	def register(self, _res):
-		if(isinstance(res, ParseResult)):
-			if(res.error):
+		if(isinstance(_res, ParseResult)):
+			if(_res.error):
 				self.error = _res.error
 			
 			return _res.node
@@ -46,9 +46,34 @@ class Parser:
 		res = ParseResult()
 		token = self.current_token
 
-		if(token.type in (Type.tint.name, Type.tfloat.name)):
+		if(token.type in (Type.tplus.name, Type.tminus.name)):
+			res.register(self.advance())
+			factor = res.register(self.factor())
+
+			if(res.error):
+				return res
+			
+			return res.success(UnaryOpNode(token, factor))
+
+		elif(token.type in (Type.tint.name, Type.tfloat.name)):
 			res.register(self.advance())
 			return res.success(NumberNode(token))
+		
+		elif(token.type == Type.tlpar.name):
+			res.register(self.advance())
+			expr = res.register(self.expr())
+
+			if(res.error):
+				return res
+			
+			if(self.current_token.type == Type.trpar.name):
+				res.register(self.advance())
+				return res.success(expr)
+			else:
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected ')'"
+				))
 
 		return res.failure(InvalidSyntaxError(
 			token.pos_start, token.pos_end,
@@ -84,6 +109,12 @@ class Parser:
 	def parse(self, _tokens):
 
 		self.clear(_tokens)
+
 		res = self.expr()
+		if(not res.error and self.current_token.type != Type.teof.name):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected '+', '-', '*' or '/'"
+			))
 
 		return res
