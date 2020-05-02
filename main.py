@@ -17,4 +17,7 @@ if __name__ == "__main__":
 		else:
 			#print(tokens)
 			ast = par.parse(tokens)
-			print(ast)
+			if(ast.error):
+				print(ast.error)
+			else:
+				print(ast.node)
