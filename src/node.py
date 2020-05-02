@@ -13,3 +13,11 @@ class BinOpNode:
 
 	def __repr__(self):
 		return '({},{},{})'.format(self.left_node, self.op_token, self.right_node)
+
+class UnaryOpNode:
+	def __init__(self, _op_token, _node):
+		self.op_token = _op_token
+		self.node = _node
+
+	def __repr__(self):
+		return '({},{})'.format(self.op_token, self.node)
