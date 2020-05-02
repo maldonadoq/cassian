@@ -1,3 +1,5 @@
+from .utils import string_with_arrows
+
 class Error:
 	def __init__(self, _pos_start, _pos_end, _name, _details):
 		self.name = _name
@@ -6,7 +8,11 @@ class Error:
 		self.details = _details
 
 	def __repr__(self):
-		return '{}:{}\nFile{},line{}'.format(self.name, self.details, self.pos_start.fn, self.pos_start.ln + 1)
+		result = ' {}:{}\n'.format(self.name, self.details)
+		result += ' File {}, line{}\n\n'.format(self.pos_start.fn, self.pos_start.ln + 1)
+		result += ' {}'.format(string_with_arrows(self.pos_start.ftxt, self.pos_start, self.pos_end))
+
+		return result
 
 
 class IllegalCharError(Error):

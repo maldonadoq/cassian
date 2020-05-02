@@ -13,9 +13,17 @@ class Type(enum.Enum):
 
 
 class Token:
-	def __init__(self, _type, _value=None):
+	def __init__(self, _type, _value=None, _pos_start=None, _pos_end=None):
 		self.type = _type
 		self.value = _value
+
+		if(_pos_start):
+			self.pos_start = _pos_start.copy()
+			self.pos_end =_pos_end.copy()
+			self.pos_end.advance()
+
+		if(_pos_end):
+			self.pos_end = _pos_end
 
 	def __repr__(self):
 		if(self.value):

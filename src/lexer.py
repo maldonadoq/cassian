@@ -55,22 +55,22 @@ class Lexer:
 			elif(self.current_char in digits):
 				tokens.append(self.getNumber())
 			elif(self.current_char == '+'):
-				tokens.append(Token(Type.tplus.name))
+				tokens.append(Token(Type.tplus.name, _pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '-'):
-				tokens.append(Token(Type.tminus.name))
+				tokens.append(Token(Type.tminus.name, _pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '*'):
-				tokens.append(Token(Type.tmul.name))
+				tokens.append(Token(Type.tmul.name, _pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '/'):
-				tokens.append(Token(Type.tdiv.name))
+				tokens.append(Token(Type.tdiv.name, _pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '('):
-				tokens.append(Token(Type.tlpar.name))
+				tokens.append(Token(Type.tlpar.name, _pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == ')'):
-				tokens.append(Token(Type.trpar.name))
+				tokens.append(Token(Type.trpar.name, _pos_start=self.pos))
 				self.advance()
 			else:
 				pos_start = self.pos.copy()

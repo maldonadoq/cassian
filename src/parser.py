@@ -1,5 +1,29 @@
 from .token import Type
 from .node import NumberNode, BinOpNode
+from .error import InvalidSyntaxError
+
+class ParseResult:
+	def __init__(self):
+		self.error = None
+		self.node = Nones
+
+	def register(self, _res):
+		if(isinstance(res, ParseResult)):
+			if(res.error):
+				self.error = _res.error
+			
+			return _res.node
+		
+		return _res
+
+
+	def success(self, _node):
+		self.node = _node
+		return self
+
+	def failure(self, _error):
+		self.error = _error
+		return self
 
 class Parser:
 	def __init__(self):
@@ -19,11 +43,17 @@ class Parser:
 		return self.current_token
 	
 	def factor(self):
+		res = ParseResult()
 		token = self.current_token
 
 		if(token.type in (Type.tint.name, Type.tfloat.name)):
-			self.advance()
-			return NumberNode(token)
+			res.register(self.advance())
+			return res.success(NumberNode(token))
+
+		return res.failure(InvalidSyntaxError(
+			token.pos_start, token.pos_end,
+			"Expected Int or Float"
+		))
 
 	def term(self):
 		return self.bin_op(self.factor, (Type.tmul.name, Type.tdiv.name))
@@ -32,15 +62,24 @@ class Parser:
 		return self.bin_op(self.term, (Type.tplus.name, Type.tminus.name))
 
 	def bin_op(self, func, ops):
-		left = func()
+		res = ParseResult()
+		left = res.register(func())
+
+		if(res.error):
+			return res
 
 		while(self.current_token.type in ops):
 			op_token = self.current_token
-			self.advance()
-			right = func()
+			res.register(self.advance())
+
+			right = res.register(func())
+
+			if(res.error):
+				return res
+
 			left = BinOpNode(left, op_token, right)
 
-		return left
+		return res.success(left)
 
 	def parse(self, _tokens):
 
