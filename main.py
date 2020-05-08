@@ -1,9 +1,11 @@
 from src.lexer import Lexer
 from src.parser import Parser
+from src.interpreter import Interpreter
 
 if __name__ == "__main__":
 	lex = Lexer()
 	par = Parser()
+	inter = Interpreter()
 	while(True):
 		line = input('cassian: ')
 
@@ -20,4 +22,7 @@ if __name__ == "__main__":
 			if(ast.error):
 				print(ast.error)
 			else:
-				print(ast.node)
+				#print(type(ast.node).__name__)
+				res = inter.visit(ast.node)
+
+				print(res)
