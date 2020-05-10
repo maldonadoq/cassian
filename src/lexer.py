@@ -1,4 +1,4 @@
-from .error import IllegalCharError
+from .errors import IllegalCharError
 from .position import Position
 from .token import Token, Type
 
