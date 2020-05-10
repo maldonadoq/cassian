@@ -1,11 +1,15 @@
+import readline
+
 from src.lexer import Lexer
 from src.parser import Parser
-from src.interpreter import Interpreter
+from src.interpreter import Interpreter, Context
 
 if __name__ == "__main__":
 	lex = Lexer()
 	par = Parser()
 	inter = Interpreter()
+	ctx = Context('<program>')
+
 	while(True):
 		line = input('cassian: ')
 
@@ -23,6 +27,9 @@ if __name__ == "__main__":
 				print(ast.error)
 			else:
 				#print(type(ast.node).__name__)
-				res = inter.visit(ast.node)
+				res = inter.visit(ast.node, ctx)
 
-				print(res)
+				if(res.error):
+					print(res.error)
+				else:
+					print(res.value)
