@@ -2,8 +2,15 @@ from .errors import IllegalCharError
 from .position import Position
 from .token import Token, Type
 
-digits = "0123456789"
+import string
 
+digits = "0123456789"
+letters = string.ascii_letters
+letters_digits = letters + digits
+
+keywords = [
+	'var'
+]
 
 class Lexer:
 	def __init__(self):
@@ -46,6 +53,21 @@ class Lexer:
 		else:
 			return Token(Type.tfloat.name, float(num), pos_start, self.pos)
 
+	def getIdentifier(self):
+		ident = ''
+		pos_start = self.pos.copy()
+
+		while self.current_char != None and self.current_char in letters_digits + '_':
+			ident += self.current_char
+			self.advance()
+
+		if(ident in keywords):
+			token_type = Type.tkeyword.name
+		else:
+			token_type = Type.tident.name
+
+		return Token(token_type, ident, pos_start, self.pos)
+
 	def scanner(self, _fn, _text):
 		self.clear(_fn, _text)
 
@@ -55,6 +77,8 @@ class Lexer:
 				self.advance()
 			elif(self.current_char in digits):
 				tokens.append(self.getNumber())
+			elif(self.current_char in letters):
+				tokens.append(self.getIdentifier())
 			elif(self.current_char == '+'):
 				tokens.append(Token(Type.tplus.name, _pos_start=self.pos))
 				self.advance()
@@ -69,6 +93,9 @@ class Lexer:
 				self.advance()
 			elif(self.current_char == '^'):
 				tokens.append(Token(Type.tpow.name, _pos_start=self.pos))
+				self.advance()
+			elif(self.current_char == '='):
+				tokens.append(Token(Type.teq.name, _pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '('):
 				tokens.append(Token(Type.tlpar.name, _pos_start=self.pos))

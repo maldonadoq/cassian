@@ -8,6 +8,21 @@ class NumberNode:
 	def __repr__(self):
 		return '{}'.format(self.token)
 
+class VarAccessNode:
+	def __init__(self, _var_name_token):
+		self.var_name_token = _var_name_token
+
+		self.pos_start = self.var_name_token.pos_start
+		self.pos_end = self.var_name_token.pos_end
+
+class VarAssignNode:
+	def __init__(self, _var_name_token, _value_node):
+		self.var_name_token = _var_name_token
+		self.value_node = _value_node
+
+		self.pos_start = self.var_name_token.pos_start
+		self.pos_end = self.value_node.pos_end
+
 class BinOpNode:
 	def __init__(self, _left_node, _op_token, _right_node):
 		self.left_node = _left_node

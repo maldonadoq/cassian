@@ -2,13 +2,19 @@ import readline
 
 from src.lexer import Lexer
 from src.parser import Parser
+from src.values import Number
 from src.interpreter import Interpreter, Context
+from src.symbol_table import SymbolTable
+
+global_symbol_table = SymbolTable()
+global_symbol_table.set("null", Number(0))
 
 if __name__ == "__main__":
 	lex = Lexer()
 	par = Parser()
 	inter = Interpreter()
 	ctx = Context('<program>')
+	ctx.symbol_table = global_symbol_table
 
 	while(True):
 		line = input('cassian: ')

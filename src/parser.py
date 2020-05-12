@@ -1,8 +1,7 @@
 from .token import Type
-from .nodes import NumberNode, BinOpNode, UnaryOpNode
+from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode
 from .errors import InvalidSyntaxError
 from .results import ParseResult
-
 
 class Parser:
 	def __init__(self):
@@ -26,18 +25,25 @@ class Parser:
 		token = self.current_token
 
 		if(token.type in (Type.tint.name, Type.tfloat.name)):
-			res.register(self.advance())
+			res.register_advancement()
+			self.advance()
 			return res.success(NumberNode(token))
-		
+		elif(token.type == Type.tident.name):
+			res.register_advancement()
+			self.advance()
+			return res.success(VarAccessNode(token))
 		elif(token.type == Type.tlpar.name):
 			res.register(self.advance())
+			self.advance()
+
 			expr = res.register(self.expr())
 
 			if(res.error):
 				return res
 			
 			if(self.current_token.type == Type.trpar.name):
-				res.register(self.advance())
+				res.register_advancement()
+				self.advance()
 				return res.success(expr)
 			else:
 				return res.failure(InvalidSyntaxError(
@@ -47,7 +53,7 @@ class Parser:
 		
 		return res.failure(InvalidSyntaxError(
 			token.pos_start, token.pos_end,
-			"Expected Int, Float, '+', '-' or '('"
+			"Expected Int, Float, Identifier, 'var', '+', '-' or '('"
 		))
 	
 	def power(self):
@@ -58,7 +64,8 @@ class Parser:
 		token = self.current_token
 
 		if(token.type in (Type.tplus.name, Type.tminus.name)):
-			res.register(self.advance())
+			res.register_advancement()
+			self.advance()
 			factor = res.register(self.factor())
 
 			if(res.error):
@@ -72,7 +79,45 @@ class Parser:
 		return self.bin_op(self.factor, (Type.tmul.name, Type.tdiv.name))
 
 	def expr(self):
-		return self.bin_op(self.term, (Type.tplus.name, Type.tminus.name))
+		res = ParseResult()
+		if(self.current_token.matches(Type.tkeyword.name, 'var')):
+			res.register_advancement()
+			self.advance()
+
+			if(self.current_token.type != Type.tident.name):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					'Expected Identifier'
+				))
+
+			var_name = self.current_token
+			res.register_advancement()
+			self.advance()
+
+			if(self.current_token.type != Type.teq.name):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected '='"
+				))
+
+			res.register_advancement()
+			self.advance()
+			expr = res.register(self.expr())
+
+			if(res.error):
+				return res
+
+			return res.success(VarAssignNode(var_name, expr))
+		
+		node = res.register(self.bin_op(self.term, (Type.tplus.name, Type.tminus.name)))
+
+		if(res.error):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'var', int, float, identifier, '+', '-' or '('"
+			))
+
+		return res.success(node)
 
 	def bin_op(self, func_a, ops, func_b=None):
 		if(func_b == None):
@@ -86,7 +131,8 @@ class Parser:
 
 		while(self.current_token.type in ops):
 			op_token = self.current_token
-			res.register(self.advance())
+			res.register_advancement()
+			self.advance()
 
 			right = res.register(func_b())
 
@@ -105,7 +151,7 @@ class Parser:
 		if(not res.error and self.current_token.type != Type.teof.name):
 			return res.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
-				"Expected '+', '-', '*' or '/'"
+				"Expected '+', '-', '*', '/' or '^'"
 			))
 
 		return res

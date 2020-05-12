@@ -12,6 +12,9 @@ class Type(enum.Enum):
 	trpar = 8
 	teof = 9
 	tpow = 10
+	tident = 11
+	tkeyword = 12
+	teq = 13
 
 
 class Token:
@@ -26,6 +29,9 @@ class Token:
 
 		if(_pos_end):
 			self.pos_end = _pos_end
+
+	def matches(self, _type, _value):
+		return self.type == _type and self.value == _value
 
 	def __repr__(self):
 		if(self.value):
