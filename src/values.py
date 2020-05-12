@@ -39,5 +39,9 @@ class Number:
 
 			return Number(self.value / _other.value).set_context(self.context), None
 
+	def powed_by(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(self.value ** _other.value).set_context(self.context), None
+
 	def __repr__(self):
 		return str(self.value)

@@ -42,6 +42,8 @@ class Interpreter:
 			result, error = left.multed_by(right)
 		elif(_node.op_token.type == Type.tdiv.name):
 			result, error = left.dived_by(right)
+		elif(_node.op_token.type == Type.tpow.name):
+			result, error = left.powed_by(right)
 
 		if(error):
 			return res.failure(error)

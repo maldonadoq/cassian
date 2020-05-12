@@ -67,6 +67,9 @@ class Lexer:
 			elif(self.current_char == '/'):
 				tokens.append(Token(Type.tdiv.name, _pos_start=self.pos))
 				self.advance()
+			elif(self.current_char == '^'):
+				tokens.append(Token(Type.tpow.name, _pos_start=self.pos))
+				self.advance()
 			elif(self.current_char == '('):
 				tokens.append(Token(Type.tlpar.name, _pos_start=self.pos))
 				self.advance()

@@ -21,20 +21,11 @@ class Parser:
 		
 		return self.current_token
 	
-	def factor(self):
+	def atom(self):
 		res = ParseResult()
 		token = self.current_token
 
-		if(token.type in (Type.tplus.name, Type.tminus.name)):
-			res.register(self.advance())
-			factor = res.register(self.factor())
-
-			if(res.error):
-				return res
-			
-			return res.success(UnaryOpNode(token, factor))
-
-		elif(token.type in (Type.tint.name, Type.tfloat.name)):
+		if(token.type in (Type.tint.name, Type.tfloat.name)):
 			res.register(self.advance())
 			return res.success(NumberNode(token))
 		
@@ -53,11 +44,29 @@ class Parser:
 					self.current_token.pos_start, self.current_token.pos_end,
 					"Expected ')'"
 				))
-
+		
 		return res.failure(InvalidSyntaxError(
 			token.pos_start, token.pos_end,
-			"Expected Int or Float"
+			"Expected Int, Float, '+', '-' or '('"
 		))
+	
+	def power(self):
+		return self.bin_op(self.atom, (Type.tpow.name, ), self.factor)
+
+	def factor(self):
+		res = ParseResult()
+		token = self.current_token
+
+		if(token.type in (Type.tplus.name, Type.tminus.name)):
+			res.register(self.advance())
+			factor = res.register(self.factor())
+
+			if(res.error):
+				return res
+			
+			return res.success(UnaryOpNode(token, factor))
+
+		return self.power()
 
 	def term(self):
 		return self.bin_op(self.factor, (Type.tmul.name, Type.tdiv.name))
@@ -65,9 +74,12 @@ class Parser:
 	def expr(self):
 		return self.bin_op(self.term, (Type.tplus.name, Type.tminus.name))
 
-	def bin_op(self, func, ops):
+	def bin_op(self, func_a, ops, func_b=None):
+		if(func_b == None):
+			func_b = func_a
+
 		res = ParseResult()
-		left = res.register(func())
+		left = res.register(func_a())
 
 		if(res.error):
 			return res
@@ -76,7 +88,7 @@ class Parser:
 			op_token = self.current_token
 			res.register(self.advance())
 
-			right = res.register(func())
+			right = res.register(func_b())
 
 			if(res.error):
 				return res

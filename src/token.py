@@ -11,6 +11,7 @@ class Type(enum.Enum):
 	tlpar = 7
 	trpar = 8
 	teof = 9
+	tpow = 10
 
 
 class Token:
