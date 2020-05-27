@@ -1,5 +1,5 @@
 from .token import Type
-from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode
+from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode
 from .errors import InvalidSyntaxError
 from .results import ParseResult
 
@@ -19,7 +19,75 @@ class Parser:
 			self.current_token = self.tokens[self.token_idx]
 		
 		return self.current_token
-	
+
+	def if_expr(self):
+		res = ParseResult()
+		cases = []
+		else_case = None
+
+		if(not self.current_token.matches(Type.tkeyword.name, 'if')):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'if'"
+			))
+		res.register_advancement()
+		self.advance()
+
+		condition = res.register(self.expr())
+		if(res.error):
+			return res
+
+		if(not self.current_token.matches(Type.tkeyword.name, 'then')):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'then'"
+			))
+
+		res.register_advancement()
+		self.advance()
+
+		expr = res.register(self.expr())
+
+		if(res.error):
+			return res
+		
+		cases.append((condition, expr))
+
+		while(self.current_token.matches(Type.tkeyword.name, 'elif')):
+			res.register_advancement()
+			self.advance()
+
+			condition = res.register(self.expr())
+
+			if(res.error):
+				return res
+
+			if(not self.current_token.matches(Type.tkeyword.name, 'then')):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected 'then'"
+				))
+
+			res.register_advancement()
+			self.advance()
+
+			expr = res.register(self.expr())
+
+			if(res.error):
+				return res
+
+			cases.append((condition, expr))
+
+		if(self.current_token.matches(Type.tkeyword.name, 'else')):
+			res.register_advancement()
+			self.advance()
+
+			else_case = res.register(self.expr())
+			if(res.error):
+				return res
+
+		return res.success(IfNode(cases, else_case))
+
 	def atom(self):
 		res = ParseResult()
 		token = self.current_token
@@ -33,7 +101,7 @@ class Parser:
 			self.advance()
 			return res.success(VarAccessNode(token))
 		elif(token.type == Type.tlpar.name):
-			res.register(self.advance())
+			res.register_advancement()
 			self.advance()
 
 			expr = res.register(self.expr())
@@ -50,6 +118,14 @@ class Parser:
 					self.current_token.pos_start, self.current_token.pos_end,
 					"Expected ')'"
 				))
+
+		elif(token.matches(Type.tkeyword.name, 'if')):
+			if_expr = res.register(self.if_expr())
+
+			if(res.error):
+				return res
+			
+			return res.success(if_expr)
 		
 		return res.failure(InvalidSyntaxError(
 			token.pos_start, token.pos_end,
@@ -137,7 +213,7 @@ class Parser:
 
 			return res.success(VarAssignNode(var_name, expr))
 		
-		node = res.register(self.bin_op(self.comp_expr, ((Type.tkeyword, 'and'), (Type.tkeyword, 'or'))))
+		node = res.register(self.bin_op(self.comp_expr, ((Type.tkeyword.name, 'and'), (Type.tkeyword.name, 'or'))))
 
 		if(res.error):
 			return res.failure(InvalidSyntaxError(

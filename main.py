@@ -8,6 +8,8 @@ from src.symbol_table import SymbolTable
 
 global_symbol_table = SymbolTable()
 global_symbol_table.set("null", Number(0))
+global_symbol_table.set("false", Number(0))
+global_symbol_table.set("true", Number(1))
 
 if __name__ == "__main__":
 	lex = Lexer()
@@ -37,5 +39,5 @@ if __name__ == "__main__":
 
 				if(res.error):
 					print(res.error)
-				else:
+				elif(res.value):
 					print(res.value)

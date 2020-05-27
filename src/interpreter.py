@@ -115,5 +115,28 @@ class Interpreter:
 		else:
 			return res.success(number.set_pos(_node.pos_start, _node.pos_end))
 
+	def visit_IfNode(self, _node, _context):
+		res = RunTimeResult()
 
-# and operator no recognized yet!!
+		for condition, expr in _node.cases:
+			condition_value = res.register(self.visit(condition, _context))
+			if(res.error):
+				return res
+			
+			if(condition_value.is_true()):
+				expr_value = res.register(self.visit(expr, _context))
+
+				if(res.error):
+					return res
+
+				return res.success(expr_value)
+		
+		if(_node.else_case):
+			else_value = res.register(self.visit(_node.else_case, _context))
+
+			if(res.error):
+				return res
+			
+			return res.success(else_value)
+		
+		return res.success(None) 
