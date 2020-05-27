@@ -43,6 +43,41 @@ class Number:
 		if(isinstance(_other, Number)):
 			return Number(self.value ** _other.value).set_context(self.context), None
 
+	def getComparisonEq(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(int(self.value == _other.value)).set_context(self.context), None
+
+	def getComparisonNeq(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(int(self.value != _other.value)).set_context(self.context), None
+
+	def getComparisonLt(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(int(self.value < _other.value)).set_context(self.context), None
+
+	def getComparisonGt(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(int(self.value > _other.value)).set_context(self.context), None
+
+	def getComparisonLte(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(int(self.value <= _other.value)).set_context(self.context), None
+
+	def getComparisonGte(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(int(self.value >= _other.value)).set_context(self.context), None
+
+	def anded_by(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(int(self.value and _other.value)).set_context(self.context), None
+
+	def ored_by(self, _other):
+		if(isinstance(_other, Number)):
+			return Number(int(self.value or _other.value)).set_context(self.context), None
+
+	def notted(self):
+		return Number(1 if self.value == 0 else 0).set_context(self.context), None
+
 	def copy(self):
 		copy = Number(self.value)
 		copy.set_pos(self.pos_start, self.pos_end)

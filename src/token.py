@@ -15,6 +15,12 @@ class Type(enum.Enum):
 	tident = 11
 	tkeyword = 12
 	teq = 13
+	tee = 14
+	tneq = 15
+	tlt = 16
+	tgt = 17
+	tlte = 18
+	tgte = 19
 
 
 class Token:

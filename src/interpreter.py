@@ -74,6 +74,23 @@ class Interpreter:
 		elif(_node.op_token.type == Type.tpow.name):
 			result, error = left.powed_by(right)
 
+		elif(_node.op_token.type == Type.tee.name):
+			result, error = left.getComparisonEq(right)
+		elif(_node.op_token.type == Type.tneq.name):
+			result, error = left.getComparisonNeq(right)
+		elif(_node.op_token.type == Type.tlt.name):
+			result, error = left.getComparisonLt(right)
+		elif(_node.op_token.type == Type.tgt.name):
+			result, error = left.getComparisonGt(right)
+		elif(_node.op_token.type == Type.tlte.name):
+			result, error = left.getComparisonLte(right)
+		elif(_node.op_token.type == Type.tgte.name):
+			result, error = left.getComparisonGte(right)
+		elif(_node.op_token.matches(Type.tkeyword.name, 'and')):
+			result, error = left.anded_by(right)
+		elif(_node.op_token.matches(Type.tkeyword.name, 'or')):
+			result, error = left.ored_by(right)
+
 		if(error):
 			return res.failure(error)
 		else:
@@ -90,8 +107,13 @@ class Interpreter:
 
 		if(_node.op_token.type == Type.tminus.name):
 			number, error = number.multed_by(Number(-1))
+		elif(_node.op_token.matches(Type.tkeyword.name, 'not')):
+			number, error = number.notted()
 
 		if(error):
 			return res.failure(error)
 		else:
 			return res.success(number.set_pos(_node.pos_start, _node.pos_end))
+
+
+# and operator no recognized yet!!
