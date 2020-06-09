@@ -140,3 +140,58 @@ class Interpreter:
 			return res.success(else_value)
 		
 		return res.success(None) 
+	
+	def visit_ForNode(self, _node, _context):
+		res = RunTimeResult()
+
+		start_value = res.register(self.visit(_node.start_value_node, _context))
+		if(res.error):
+			return res
+
+		end_value = res.register(self.visit(_node.end_value_node, _context))
+		if(res.error):
+			return res
+
+		if(_node.step_value_node):
+			step_value = res.register(self.visit(_node.step_value_node, _context))
+			if(res.error):
+				return res
+		else:
+			step_value = Number(1)
+
+		i = start_value.value
+
+		if(step_value.value >= 0):
+			condition = lambda: i < end_value.value
+		else:
+			condition = lambda: i > end_value.value
+
+		while(condition()):
+			_context.symbol_table.set(_node.var_name_token.value, Number(i))
+			i += step_value.value
+
+			res.register(self.visit(_node.body_node, _context))
+
+			if(res.error):
+				return res
+	
+		return res.success(None)
+
+	def visit_WhileNode(self, _node, _context):
+		res = RunTimeResult()
+
+		while(True):
+			condition = res.register(self.visit(_node.condition_node, _context))
+
+			if(res.error):
+				return res
+
+			if(not condition.is_true()):
+				break
+
+			res.register(self.visit(_node.body_node, _context))
+
+			if(res.error):
+				return res
+
+		return res.success(None)

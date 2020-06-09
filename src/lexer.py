@@ -16,7 +16,11 @@ keywords = [
 	'if',
 	'then',
 	'elif',
-	'else'
+	'else',
+	'for',
+	'to',
+	'step',
+	'while'
 ]
 
 class Lexer:

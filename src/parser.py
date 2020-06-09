@@ -1,5 +1,5 @@
 from .token import Type
-from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode
+from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode
 from .errors import InvalidSyntaxError
 from .results import ParseResult
 
@@ -88,6 +88,116 @@ class Parser:
 
 		return res.success(IfNode(cases, else_case))
 
+	def for_expr(self):
+		res = ParseResult()
+
+		if(not self.current_token.matches(Type.tkeyword.name, 'for')):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'for'"
+			))
+
+		res.register_advancement()
+		self.advance()
+
+		if(self.current_token.type != Type.tident.name):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected identifier"
+			))
+		
+		var_name = self.current_token
+		res.register_advancement()
+		self.advance()
+
+		if(self.current_token.type != Type.teq.name):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected '='"
+			))
+
+		res.register_advancement()
+		self.advance()
+
+		start_value = res.register(self.expr())
+
+		if(res.error):
+			return res
+
+		if(not self.current_token.matches(Type.tkeyword.name, 'to')):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'to'"
+			))
+
+		res.register_advancement()
+		self.advance()
+
+		end_value = res.register(self.expr())
+
+		if(res.error):
+			return res
+
+		if(self.current_token.matches(Type.tkeyword.name, 'step')):
+			res.register_advancement()
+			self.advance()
+
+			step_value = res.register(self.expr())
+			if(res.error):
+				return res
+		else:
+			step_value = None
+
+		if(not self.current_token.matches(Type.tkeyword.name, 'then')):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'then'"
+			))
+
+		res.register_advancement()
+		self.advance()
+
+		body = res.register(self.expr())
+
+		if(res.error):
+			return res
+
+		return res.success(ForNode(var_name, start_value, end_value, step_value, body))
+
+	def while_expr(self):
+		res = ParseResult()
+
+		if(not self.current_token.matches(Type.tkeyword.name, 'while')):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'while'"
+			))
+
+		res.register_advancement()
+		self.advance()
+
+		condition = res.register(self.expr())
+
+		if(res.error):
+			return res
+
+		if(not self.current_token.matches(Type.tkeyword.name, 'then')):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'then'"
+			))
+		
+		
+		res.register_advancement()
+		self.advance()
+
+		body = res.register(self.expr())
+
+		if(res.error):
+			return res
+
+		return res.success(WhileNode(condition, body))
+
 	def atom(self):
 		res = ParseResult()
 		token = self.current_token
@@ -126,6 +236,22 @@ class Parser:
 				return res
 			
 			return res.success(if_expr)
+
+		elif(token.matches(Type.tkeyword.name, 'for')):
+			for_expr = res.register(self.for_expr())
+
+			if(res.error):
+				return res
+			
+			return res.success(for_expr)
+
+		elif(token.matches(Type.tkeyword.name, 'while')):
+			while_expr = res.register(self.while_expr())
+
+			if(res.error):
+				return res
+			
+			return res.success(while_expr)
 		
 		return res.failure(InvalidSyntaxError(
 			token.pos_start, token.pos_end,
