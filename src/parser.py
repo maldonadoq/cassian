@@ -210,8 +210,6 @@ class Parser:
 		res.register_advancement()
 		self.advance()
 
-		# fun add(a, b) -> a + b
-
 		if(self.current_token.type == Type.tident.name):
 			var_name_token = self.current_token
 			
