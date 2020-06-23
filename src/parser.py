@@ -1,5 +1,5 @@
 from .token import Type
-from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode, CallNode
+from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode, CallNode, FunctionNode
 from .errors import InvalidSyntaxError
 from .results import ParseResult
 
@@ -7,8 +7,8 @@ class Parser:
 	def __init__(self):
 		pass
 	
-	def clear(self, _tokens):
-		self.tokens = _tokens
+	def clear(self, tokens):
+		self.tokens = tokens
 		self.token_idx = -1
 		self.advance()
 
@@ -210,6 +210,8 @@ class Parser:
 		res.register_advancement()
 		self.advance()
 
+		# fun add(a, b) -> a + b
+
 		if(self.current_token.type == Type.tident.name):
 			var_name_token = self.current_token
 			
@@ -325,7 +327,7 @@ class Parser:
 					
 				if(self.current_token.type != Type.trpar.name):
 					return res.failure(InvalidSyntaxError(
-						self.current_token.pos_start, self.current_token._pos_end,
+						self.current_token.pos_start, self.current_token.pos_end,
 						"Expected ',' or ')'"
 					))
 
@@ -456,6 +458,7 @@ class Parser:
 
 	def expr(self):
 		res = ParseResult()
+
 		if(self.current_token.matches(Type.tkeyword.name, 'var')):
 			res.register_advancement()
 			self.advance()
@@ -519,11 +522,12 @@ class Parser:
 
 		return res.success(left)
 
-	def parse(self, _tokens):
+	def parse(self, tokens):
 
-		self.clear(_tokens)
+		self.clear(tokens)
 
 		res = self.expr()
+
 		if(not res.error and self.current_token.type != Type.teof.name):
 			return res.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
@@ -531,3 +535,5 @@ class Parser:
 			))
 
 		return res
+
+# fun add(a, b) -> a + b

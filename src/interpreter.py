@@ -1,138 +1,189 @@
 from .token import Type
-from .values import Number
+from .values import Value, Number
 from .results import RunTimeResult
 from .errors import RunTimeError
+from .symbol_table import SymbolTable
 
 class Context:
-	def __init__(self, _display_name, _parent=None, _parent_entry_pos=None):
-		self.display_name = _display_name
-		self.parent = _parent
-		self.parent_entry_pos = _parent_entry_pos
+	def __init__(self, display_name, parent=None, parent_entry_pos=None):
+		self.display_name = display_name
+		self.parent = parent
+		self.parent_entry_pos = parent_entry_pos
 		self.symbol_table = None
 
-class Interpreter:
-	def visit(self, _node, _context):
-		method_name = 'visit_{}'.format(type(_node).__name__)
-		method = getattr(self, method_name, self.no_visit)
+class Function(Value):
+	def __init__(self, name, body_node, arg_names):
+		super().__init__()
+		self.name = name or "<anonymous>"
+		self.body_node = body_node
+		self.arg_names = arg_names
 
-		return method(_node, _context)
-
-	def no_visit(self, _node, _context):
-		raise Exception('No visit_{} method difined'.format(type(_node).__name__))
-
-	def visit_NumberNode(self, _node, _context):
-		return RunTimeResult().success(
-			Number(_node.token.value).set_context(_context).set_pos(_node.pos_start, _node.pos_end)
-		)
-
-	def visit_VarAccessNode(self, _node, _context):
+	def execute(self, args):
 		res = RunTimeResult()
 
-		var_name = _node.var_name_token.value
-		value = _context.symbol_table.get(var_name)
+		interpreter = Interpreter()
+		new_context = Context(self.name, self.context, self.pos_start)
+		new_context.symbol_table = SymbolTable(new_context.parent.symbol_table)
+
+		if(len(args) > len(self.arg_names)):
+			return res.failure(RunTimeError(
+				self.pos_start, self.pos_end,
+				"'{}' too many args passed into '{}'".format(len(args) - len(self.arg_names), self.name),
+				self.context
+			))
+		
+		if(len(args) < len(self.arg_names)):
+			return res.failure(RunTimeError(
+				self.pos_start, self.pos_end,
+				"{} too few args passed into '{}'".format(len(self.arg_names) - len(args), self.name),
+				self.context
+			))
+
+		for i in range(len(args)):
+			arg_name = self.arg_names[i]
+			arg_value = args[i]
+			arg_value.set_context(new_context)
+			new_context.symbol_table.set(arg_name, arg_value)
+
+		value = res.register(interpreter.visit(self.body_node, new_context))
+
+		if(res.error):
+			return res
+
+		return res.success(value)
+
+	def copy(self):
+		copy = Function(self.name, self.body_node, self.arg_names)
+		copy.set_context(self.context)
+		copy.set_pos(self.pos_start, self.pos_end)
+		return copy
+
+	def __repr__(self):
+		return '<function {}>'.format(self.name)
+
+class Interpreter:
+	def visit(self, node, context):
+		method_name = 'visit_{}'.format(type(node).__name__)
+		method = getattr(self, method_name, self.no_visit)
+
+		return method(node, context)
+
+	def no_visit(self, node, context):
+		raise Exception('No visit_{} method difined'.format(type(node).__name__))
+
+	def visit_NumberNode(self, node, context):
+		return RunTimeResult().success(
+			Number(node.token.value).set_context(context).set_pos(node.pos_start, node.pos_end)
+		)
+
+	def visit_VarAccessNode(self, node, context):
+		res = RunTimeResult()
+
+		var_name = node.var_name_token.value
+		value = context.symbol_table.get(var_name)
 
 		if(not value):
 			return res.failure(RunTimeError(
-				_node.pos_start, _node.pos_end,
+				node.pos_start, node.pos_end,
 				"'{}' is not defined".format(var_name),
-				_context
+				context
 			))
 
-		value = value.copy().set_pos(_node.pos_start, _node.pos_end)
+		value = value.copy().set_pos(node.pos_start, node.pos_end)
 		return res.success(value)
 
-	def visit_VarAssignNode(self, _node, _context):
+	def visit_VarAssignNode(self, node, context):
 		res = RunTimeResult()
-		var_name = _node.var_name_token.value
-		value = res.register(self.visit(_node.value_node, _context))
+		var_name = node.var_name_token.value
+		value = res.register(self.visit(node.value_node, context))
 
 		if(res.error):
 			return res
 
-		_context.symbol_table.set(var_name, value)
+		context.symbol_table.set(var_name, value)
 		return res.success(value)
 
-	def visit_BinOpNode(self, _node, _context):
+	def visit_BinOpNode(self, node, context):
 		res = RunTimeResult()
 
-		left = res.register(self.visit(_node.left_node, _context))
+		left = res.register(self.visit(node.left_node, context))
 		if(res.error):
 			return res
 
-		right = res.register(self.visit(_node.right_node, _context))
+		right = res.register(self.visit(node.right_node, context))
 		if(res.error):
 			return res
 
-		if(_node.op_token.type == Type.tplus.name):
+		if(node.op_token.type == Type.tplus.name):
 			result, error = left.added_by(right)
-		elif(_node.op_token.type == Type.tminus.name):
+		elif(node.op_token.type == Type.tminus.name):
 			result, error = left.subbed_by(right)
-		elif(_node.op_token.type == Type.tmul.name):
+		elif(node.op_token.type == Type.tmul.name):
 			result, error = left.multed_by(right)
-		elif(_node.op_token.type == Type.tdiv.name):
+		elif(node.op_token.type == Type.tdiv.name):
 			result, error = left.dived_by(right)
-		elif(_node.op_token.type == Type.tpow.name):
+		elif(node.op_token.type == Type.tpow.name):
 			result, error = left.powed_by(right)
 
-		elif(_node.op_token.type == Type.tee.name):
+		elif(node.op_token.type == Type.tee.name):
 			result, error = left.getComparisonEq(right)
-		elif(_node.op_token.type == Type.tneq.name):
+		elif(node.op_token.type == Type.tneq.name):
 			result, error = left.getComparisonNeq(right)
-		elif(_node.op_token.type == Type.tlt.name):
+		elif(node.op_token.type == Type.tlt.name):
 			result, error = left.getComparisonLt(right)
-		elif(_node.op_token.type == Type.tgt.name):
+		elif(node.op_token.type == Type.tgt.name):
 			result, error = left.getComparisonGt(right)
-		elif(_node.op_token.type == Type.tlte.name):
+		elif(node.op_token.type == Type.tlte.name):
 			result, error = left.getComparisonLte(right)
-		elif(_node.op_token.type == Type.tgte.name):
+		elif(node.op_token.type == Type.tgte.name):
 			result, error = left.getComparisonGte(right)
-		elif(_node.op_token.matches(Type.tkeyword.name, 'and')):
+		elif(node.op_token.matches(Type.tkeyword.name, 'and')):
 			result, error = left.anded_by(right)
-		elif(_node.op_token.matches(Type.tkeyword.name, 'or')):
+		elif(node.op_token.matches(Type.tkeyword.name, 'or')):
 			result, error = left.ored_by(right)
 
 		if(error):
 			return res.failure(error)
 		else:
-			return res.success(result.set_pos(_node.pos_start, _node.pos_end))
+			return res.success(result.set_pos(node.pos_start, node.pos_end))
 
-	def visit_UnaryOpNode(self, _node, _context):	
+	def visit_UnaryOpNode(self, node, context):	
 		res = RunTimeResult()
-		number = res.register(self.visit(_node.node, _context))
+		number = res.register(self.visit(node.node, context))
 
 		if(res.error):
 			return res
 		
 		error = None
 
-		if(_node.op_token.type == Type.tminus.name):
+		if(node.op_token.type == Type.tminus.name):
 			number, error = number.multed_by(Number(-1))
-		elif(_node.op_token.matches(Type.tkeyword.name, 'not')):
+		elif(node.op_token.matches(Type.tkeyword.name, 'not')):
 			number, error = number.notted()
 
 		if(error):
 			return res.failure(error)
 		else:
-			return res.success(number.set_pos(_node.pos_start, _node.pos_end))
+			return res.success(number.set_pos(node.pos_start, node.pos_end))
 
-	def visit_IfNode(self, _node, _context):
+	def visit_IfNode(self, node, context):
 		res = RunTimeResult()
 
-		for condition, expr in _node.cases:
-			condition_value = res.register(self.visit(condition, _context))
+		for condition, expr in node.cases:
+			condition_value = res.register(self.visit(condition, context))
 			if(res.error):
 				return res
 			
 			if(condition_value.is_true()):
-				expr_value = res.register(self.visit(expr, _context))
+				expr_value = res.register(self.visit(expr, context))
 
 				if(res.error):
 					return res
 
 				return res.success(expr_value)
 		
-		if(_node.else_case):
-			else_value = res.register(self.visit(_node.else_case, _context))
+		if(node.else_case):
+			else_value = res.register(self.visit(node.else_case, context))
 
 			if(res.error):
 				return res
@@ -141,19 +192,19 @@ class Interpreter:
 		
 		return res.success(None) 
 	
-	def visit_ForNode(self, _node, _context):
+	def visit_ForNode(self, node, context):
 		res = RunTimeResult()
 
-		start_value = res.register(self.visit(_node.start_value_node, _context))
+		start_value = res.register(self.visit(node.start_value_node, context))
 		if(res.error):
 			return res
 
-		end_value = res.register(self.visit(_node.end_value_node, _context))
+		end_value = res.register(self.visit(node.end_value_node, context))
 		if(res.error):
 			return res
 
-		if(_node.step_value_node):
-			step_value = res.register(self.visit(_node.step_value_node, _context))
+		if(node.step_value_node):
+			step_value = res.register(self.visit(node.step_value_node, context))
 			if(res.error):
 				return res
 		else:
@@ -167,21 +218,21 @@ class Interpreter:
 			condition = lambda: i > end_value.value
 
 		while(condition()):
-			_context.symbol_table.set(_node.var_name_token.value, Number(i))
+			context.symbol_table.set(node.var_name_token.value, Number(i))
 			i += step_value.value
 
-			res.register(self.visit(_node.body_node, _context))
+			res.register(self.visit(node.body_node, context))
 
 			if(res.error):
 				return res
 	
 		return res.success(None)
 
-	def visit_WhileNode(self, _node, _context):
+	def visit_WhileNode(self, node, context):
 		res = RunTimeResult()
 
 		while(True):
-			condition = res.register(self.visit(_node.condition_node, _context))
+			condition = res.register(self.visit(node.condition_node, context))
 
 			if(res.error):
 				return res
@@ -189,7 +240,7 @@ class Interpreter:
 			if(not condition.is_true()):
 				break
 
-			res.register(self.visit(_node.body_node, _context))
+			res.register(self.visit(node.body_node, context))
 
 			if(res.error):
 				return res
@@ -199,12 +250,12 @@ class Interpreter:
 	def visit_FunctionNode(self, node, context):
 		res = RunTimeResult()
 
-		func_name = node.var_name_tok.value if node.var_name_tok else None
+		func_name = node.var_name_token.value if node.var_name_token else None
 		body_node = node.body_node
-		arg_names = [arg_name.value for arg_name in node.arg_name_toks]
+		arg_names = [arg_name.value for arg_name in node.arg_name_tokens]
 		func_value = Function(func_name, body_node, arg_names).set_context(context).set_pos(node.pos_start, node.pos_end)
 		
-		if node.var_name_tok:
+		if node.var_name_token:
 			context.symbol_table.set(func_name, func_value)
 
 		return res.success(func_value)
