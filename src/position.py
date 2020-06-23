@@ -1,16 +1,16 @@
 class Position:
-	def __init__(self, _idx, _ln, _col, _fn, _ftxt):
-		self.idx = _idx
-		self.ln = _ln
-		self.col = _col
-		self.fn = _fn
-		self.ftxt = _ftxt
+	def __init__(self, idx, ln, col, fn, ftxt):
+		self.idx = idx
+		self.ln = ln
+		self.col = col
+		self.fn = fn
+		self.ftxt = ftxt
 
-	def advance(self, _current=None):
+	def advance(self, current=None):
 		self.idx += 1
 		self.col += 1
 
-		if(_current == '\n'):
+		if(current == '\n'):
 			self.ln += 1
 			self.col = 0
 

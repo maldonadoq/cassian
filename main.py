@@ -24,12 +24,12 @@ if __name__ == "__main__":
 		if(line == ':q'):
 			break
 
-		tokens, error = lex.scanner('<stdin>', line)		
+		tokens, error = lex.scanner('<stdin>', line)
 
 		if(error):
 			print(error)
 		else:
-			#print(tokens)
+			# print(tokens)
 			ast = par.parse(tokens)
 			if(ast.error):
 				print(ast.error)

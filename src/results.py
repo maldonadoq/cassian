@@ -18,8 +18,8 @@ class ParseResult:
 			
 		return _res.node
 
-	def success(self, _node):
-		self.node = _node
+	def success(self, node):
+		self.node = node
 		return self
 
 	def failure(self, _error):
@@ -37,8 +37,8 @@ class RunTimeResult:
 		self.error = _res.error
 		return _res.value
 
-	def success(self, _value):
-		self.value = _value
+	def success(self, value):
+		self.value = value
 		return self
 
 	def failure(self, _error):
