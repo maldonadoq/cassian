@@ -1,0 +1,7 @@
+# function
+    - fun add(a, b) -> a + b
+    - add(10,2)
+    - var tmp = add
+    - var plus = fun (a) -> a + 6
+    - fun test(a) -> a / 0
+    - test(10) # Error
