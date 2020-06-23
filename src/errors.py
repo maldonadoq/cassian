@@ -1,11 +1,11 @@
 from .utils import string_with_arrows
 
 class Error:
-	def __init__(self, _pos_start, _pos_end, _name, _details):
-		self.name = _name
-		self.pos_start = _pos_start
-		self.pos_end = _pos_end
-		self.details = _details
+	def __init__(self, pos_start, pos_end, name, details):
+		self.name = name
+		self.pos_start = pos_start
+		self.pos_end = pos_end
+		self.details = details
 
 	def __repr__(self):
 		result = ' {}:{}\n'.format(self.name, self.details)
@@ -16,22 +16,22 @@ class Error:
 
 
 class IllegalCharError(Error):
-	def __init__(self, _pos_start, _pos_end, _details):
-		super().__init__(_pos_start, _pos_end, 'Illegal Character', _details)
+	def __init__(self, pos_start, pos_end, details):
+		super().__init__(pos_start, pos_end, 'Illegal Character', details)
 
 class ExpectedCharError(Error):
-	def __init__(self, _pos_start, _pos_end, _details):
-		super().__init__(_pos_start, _pos_end, 'Expected Character', _details)
+	def __init__(self, pos_start, pos_end, details):
+		super().__init__(pos_start, pos_end, 'Expected Character', details)
 
 
 class InvalidSyntaxError(Error):
-	def __init__(self, _pos_start, _pos_end, _details):
-		super().__init__(_pos_start, _pos_end, 'Invalid Syntax', _details)
+	def __init__(self, pos_start, pos_end, details):
+		super().__init__(pos_start, pos_end, 'Invalid Syntax', details)
 
 class RunTimeError(Error):
-	def __init__(self, _pos_start, _pos_end, _details, _context):
-		super().__init__(_pos_start, _pos_end, 'Runtime Error', _details)
-		self.context = _context
+	def __init__(self, pos_start, pos_end, details, context):
+		super().__init__(pos_start, pos_end, 'Runtime Error', details)
+		self.context = context
 
 	def __repr__(self):
 
