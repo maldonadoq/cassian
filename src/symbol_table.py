@@ -1,18 +1,18 @@
 class SymbolTable:
-	def __init__(self):
+	def __init__(self, parent=None):
 		self.symbols = {}
-		self.parent = None
+		self.parent = parent
 
-	def get(self, _name):
-		value = self.symbols.get(_name, None)
+	def get(self, name):
+		value = self.symbols.get(name, None)
 
 		if(value == None and self.parent):
-			return self.parent.get(_name)
+			return self.parent.get(name)
 
 		return value
 
-	def set(self, _name, _value):
-		self.symbols[_name] = _value
+	def set(self, name, value):
+		self.symbols[name] = value
 
-	def remove(self, _name):
-		del self.symbols[_name]
+	def remove(self, name):
+		del self.symbols[name]

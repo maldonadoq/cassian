@@ -25,20 +25,20 @@ class Type(enum.Enum):
 	tarrow = 21
 
 class Token:
-	def __init__(self, _type, _value=None, _pos_start=None, _pos_end=None):
+	def __init__(self, _type, value=None, pos_start=None, pos_end=None):
 		self.type = _type
-		self.value = _value
+		self.value = value
 
-		if(_pos_start):
-			self.pos_start = _pos_start.copy()
-			self.pos_end =_pos_start.copy()
+		if(pos_start):
+			self.pos_start = pos_start.copy()
+			self.pos_end =pos_start.copy()
 			self.pos_end.advance()
 
-		if(_pos_end):
-			self.pos_end = _pos_end.copy()
+		if(pos_end):
+			self.pos_end = pos_end.copy()
 
-	def matches(self, _type, _value):
-		return self.type == _type and self.value == _value
+	def matches(self, _type, value):
+		return self.type == _type and self.value == value
 
 	def __repr__(self):
 		if(self.value):

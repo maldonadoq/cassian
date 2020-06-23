@@ -20,7 +20,7 @@ keywords = [
 	'for',
 	'to',
 	'step',
-	'while'
+	'while',
 	'fun'
 ]
 
@@ -28,10 +28,10 @@ class Lexer:
 	def __init__(self):
 		pass
 
-	def clear(self, _fn, _text):
-		self.fn = _fn
-		self.text = _text
-		self.pos = Position(-1, 0, -1, _fn, _text)
+	def clear(self, fn, text):
+		self.fn = fn
+		self.text = text
+		self.pos = Position(-1, 0, -1, fn, text)
 		self.current_char = None
 		self.advance()
 
@@ -86,7 +86,7 @@ class Lexer:
 
 		if(self.current_char == '='):
 			self.advance()
-			return Token(Type.tneq.name, _pos_start=pos_start, _pos_end=self.pos), None
+			return Token(Type.tneq.name, pos_start=pos_start, pos_end=self.pos), None
 
 		self.advance()
 		return None, ExpectedCharError(pos_start, self.pos, "'=' (after '!')")
@@ -100,7 +100,7 @@ class Lexer:
 			self.advance()
 			token_type = Type.tee.name
 
-		return Token(token_type, _pos_start=pos_start, _pos_end=self.pos)
+		return Token(token_type, pos_start=pos_start, pos_end=self.pos)
 
 	def getLessThan(self):
 		token_type = Type.tlt.name
@@ -111,7 +111,7 @@ class Lexer:
 			self.advance()
 			token_type = Type.tlte.name
 
-		return Token(token_type, _pos_start=pos_start, _pos_end=self.pos)
+		return Token(token_type, pos_start=pos_start, pos_end=self.pos)
 
 	def getGreaterThan(self):
 		token_type = Type.tgt.name
@@ -122,7 +122,7 @@ class Lexer:
 			self.advance()
 			token_type = Type.tgte.name
 
-		return Token(token_type, _pos_start=pos_start, _pos_end=self.pos)
+		return Token(token_type, pos_start=pos_start, pos_end=self.pos)
 
 	def getMinusArrow(self):
 		token_type = Type.tminus.name
@@ -133,10 +133,10 @@ class Lexer:
 			self.advance()
 			token_type = Type.tarrow.name
 
-		return Token(token_type, _pos_start=pos_start, _pos_end=self.pos)
+		return Token(token_type, pos_start=pos_start, pos_end=self.pos)
 
-	def scanner(self, _fn, _text):
-		self.clear(_fn, _text)
+	def scanner(self, fn, text):
+		self.clear(fn, text)
 
 		tokens = []
 		while(self.current_char != None):
@@ -147,24 +147,24 @@ class Lexer:
 			elif(self.current_char in letters):
 				tokens.append(self.getIdentifier())
 			elif(self.current_char == '+'):
-				tokens.append(Token(Type.tplus.name, _pos_start=self.pos))
+				tokens.append(Token(Type.tplus.name, pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '-'):
 				tokens.append(self.getMinusArrow())
 			elif(self.current_char == '*'):
-				tokens.append(Token(Type.tmul.name, _pos_start=self.pos))
+				tokens.append(Token(Type.tmul.name, pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '/'):
-				tokens.append(Token(Type.tdiv.name, _pos_start=self.pos))
+				tokens.append(Token(Type.tdiv.name, pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '^'):
-				tokens.append(Token(Type.tpow.name, _pos_start=self.pos))
+				tokens.append(Token(Type.tpow.name, pos_start=self.pos))
 				self.advance()			
 			elif(self.current_char == '('):
-				tokens.append(Token(Type.tlpar.name, _pos_start=self.pos))
+				tokens.append(Token(Type.tlpar.name, pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == ')'):
-				tokens.append(Token(Type.trpar.name, _pos_start=self.pos))
+				tokens.append(Token(Type.trpar.name, pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '!'):
 				token, err = self.getNotEqual()
@@ -179,7 +179,7 @@ class Lexer:
 			elif(self.current_char == '>'):
 				tokens.append(self.getGreaterThan())
 			elif(self.current_char == ','):
-				tokens.append(Token(Type.tcomma.name, _pos_start=self.pos))
+				tokens.append(Token(Type.tcomma.name, pos_start=self.pos))
 				self.advance()
 			else:
 				pos_start = self.pos.copy()
@@ -187,5 +187,5 @@ class Lexer:
 				self.advance()
 				return [], IllegalCharError(pos_start, self.pos, "'" + ch + "'")
 
-		tokens.append(Token(Type.teof.name, _pos_start=self.pos))
+		tokens.append(Token(Type.teof.name, pos_start=self.pos))
 		return tokens, None
