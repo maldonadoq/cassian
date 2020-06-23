@@ -21,7 +21,8 @@ class Type(enum.Enum):
 	tgt = 17
 	tlte = 18
 	tgte = 19
-
+	tcomma = 20
+	tarrow = 21
 
 class Token:
 	def __init__(self, _type, _value=None, _pos_start=None, _pos_end=None):
@@ -34,7 +35,7 @@ class Token:
 			self.pos_end.advance()
 
 		if(_pos_end):
-			self.pos_end = _pos_end
+			self.pos_end = _pos_end.copy()
 
 	def matches(self, _type, _value):
 		return self.type == _type and self.value == _value

@@ -21,6 +21,7 @@ keywords = [
 	'to',
 	'step',
 	'while'
+	'fun'
 ]
 
 class Lexer:
@@ -123,6 +124,17 @@ class Lexer:
 
 		return Token(token_type, _pos_start=pos_start, _pos_end=self.pos)
 
+	def getMinusArrow(self):
+		token_type = Type.tminus.name
+		pos_start = self.pos.copy()
+		self.advance()
+
+		if(self.current_char == '>'):
+			self.advance()
+			token_type = Type.tarrow.name
+
+		return Token(token_type, _pos_start=pos_start, _pos_end=self.pos)
+
 	def scanner(self, _fn, _text):
 		self.clear(_fn, _text)
 
@@ -138,8 +150,7 @@ class Lexer:
 				tokens.append(Token(Type.tplus.name, _pos_start=self.pos))
 				self.advance()
 			elif(self.current_char == '-'):
-				tokens.append(Token(Type.tminus.name, _pos_start=self.pos))
-				self.advance()
+				tokens.append(self.getMinusArrow())
 			elif(self.current_char == '*'):
 				tokens.append(Token(Type.tmul.name, _pos_start=self.pos))
 				self.advance()
@@ -167,6 +178,9 @@ class Lexer:
 				tokens.append(self.getLessThan())
 			elif(self.current_char == '>'):
 				tokens.append(self.getGreaterThan())
+			elif(self.current_char == ','):
+				tokens.append(Token(Type.tcomma.name, _pos_start=self.pos))
+				self.advance()
 			else:
 				pos_start = self.pos.copy()
 				ch = self.current_char

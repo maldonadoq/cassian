@@ -1,5 +1,5 @@
 from .token import Type
-from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode
+from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode, CallNode
 from .errors import InvalidSyntaxError
 from .results import ParseResult
 
@@ -198,6 +198,144 @@ class Parser:
 
 		return res.success(WhileNode(condition, body))
 
+	def fun_def(self):
+		res = ParseResult()
+
+		if(not self.current_token.matches(Type.tkeyword.name, 'fun')):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected 'fun'"
+			))
+
+		res.register_advancement()
+		self.advance()
+
+		if(self.current_token.type == Type.tident.name):
+			var_name_token = self.current_token
+			
+			res.register_advancement()
+			self.advance()
+
+			if(self.current_token.type != Type.tlpar.name):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected '('"
+				))
+		else:
+			var_name_token = None
+
+			if(self.current_token.type != Type.tlpar.name):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected '('"
+				))
+
+		res.register_advancement()
+		self.advance()
+
+		arg_name_tokens = []
+
+		if(self.current_token.type == Type.tident.name):
+			arg_name_tokens.append(self.current_token)
+			res.register_advancement()
+			self.advance()
+
+			while(self.current_token.type == Type.tcomma.name):
+				res.register_advancement()
+				self.advance()
+
+				if(self.current_token.type != Type.tident.name):
+					return res.failure(InvalidSyntaxError(
+						self.current_token.pos_start, self.current_token.pos_end,
+						'Expected identifier'
+					))
+
+				arg_name_tokens.append(self.current_token)
+				res.register_advancement()
+				self.advance()
+			
+			if(self.current_token.type != Type.trpar.name):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected ',' or ')'"
+				))
+		else:
+			if(self.current_token.type != Type.trpar.name):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected identifier or ')'"
+				))
+
+		res.register_advancement()
+		self.advance()
+
+		if(self.current_token.type != Type.tarrow.name):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected  '->'"
+			))
+
+		res.register_advancement()
+		self.advance()
+
+		node_return = res.register(self.expr())
+
+		if(res.error):
+			return res
+		
+		return res.success(FunctionNode(
+			var_name_token,
+			arg_name_tokens,
+			node_return
+		))
+
+
+	def call(self):
+		res = ParseResult()
+		atom = res.register(self.atom())
+
+		if(res.error):
+			return res
+		
+		if(self.current_token.type == Type.tlpar.name):
+			res.register_advancement()
+			self.advance()
+
+			arg_nodes = []
+
+			if(self.current_token.type == Type.trpar.name):
+				res.register_advancement()
+				self.advance()
+			else:
+				arg_nodes.append(res.register(self.expr()))
+				if(res.error):
+					return res.failure(InvalidSyntaxError(
+						self.current_token.pos_start, self.current_token.pos_end,
+						"Expected ')', 'var', 'if', 'for', 'while', 'fun', int, float, ident"
+					))
+				
+				while(self.current_token.type == Type.tcomma.name):
+					res.register_advancement()
+					self.advance()
+
+					arg_nodes.append(res.register(self.expr()))
+
+					if(res.error):
+						return res
+					
+				if(self.current_token.type != Type.trpar.name):
+					return res.failure(InvalidSyntaxError(
+						self.current_token.pos_start, self.current_token._pos_end,
+						"Expected ',' or ')'"
+					))
+
+				res.register_advancement()
+				self.advance()
+			
+			return res.success(CallNode(atom, arg_nodes))
+		
+		return res.success(atom)				
+
 	def atom(self):
 		res = ParseResult()
 		token = self.current_token
@@ -252,6 +390,14 @@ class Parser:
 				return res
 			
 			return res.success(while_expr)
+
+		elif(token.matches(Type.tkeyword.name, 'fun')):
+			fun_def = res.register(self.fun_def())
+
+			if(res.error):
+				return res
+			
+			return res.success(fun_def)
 		
 		return res.failure(InvalidSyntaxError(
 			token.pos_start, token.pos_end,
@@ -259,7 +405,7 @@ class Parser:
 		))
 	
 	def power(self):
-		return self.bin_op(self.atom, (Type.tpow.name, ), self.factor)
+		return self.bin_op(self.call, (Type.tpow.name, ), self.factor)
 
 	def factor(self):
 		res = ParseResult()
