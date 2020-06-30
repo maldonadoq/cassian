@@ -6,17 +6,17 @@ from src.values import Number
 from src.interpreter import Interpreter, Context
 from src.symbol_table import SymbolTable
 
-global_symbol_table = SymbolTable()
-global_symbol_table.set("null", Number(0))
-global_symbol_table.set("false", Number(0))
-global_symbol_table.set("true", Number(1))
+symb_table = SymbolTable()
+symb_table.set("null", Number(0))
+symb_table.set("false", Number(0))
+symb_table.set("true", Number(1))
 
 if __name__ == "__main__":
 	lex = Lexer()
 	par = Parser()
 	inter = Interpreter()
 	ctx = Context('<program>')
-	ctx.symbol_table = global_symbol_table
+	ctx.symbol_table = symb_table
 
 	while(True):
 		line = input('cassian: ')
