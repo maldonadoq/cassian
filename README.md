@@ -25,7 +25,7 @@ class Lexer:
 	def scanner(self, fn, text):
 		self.clear(fn, text)
 
-		tokens = []
+	tokens = []
 		while(self.current_char != None):
 			if(self.current_char in ' \t'):
 				self.advance()
