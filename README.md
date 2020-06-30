@@ -102,7 +102,6 @@ if __name__ == "__main__":
       if(ast.error):
         print(ast.error)
       else:
-        #print(type(ast.node).__name__)
         res = inter.visit(ast.node, ctx)
 
         if(res.error):
