@@ -9,6 +9,16 @@ Interpreter Code
 ### Inspired by
 - [Let’s Build A Simple Interpreter. Part 1.](https://ruslanspivak.com/lsbasi-part1/)
 
+#### Grammar
+- [Complete Grammar](https://github.com/maldonadoq/cassian/blob/master/grammar.txt)
+```txt
+expr        :var ident = expr
+            : comp-expr ((and|or) comp-expr) *
+comp-expr   : not comp-expr
+            : arith-expr ((== | < | > | <= | >=) arith-expr) *
+arith-expr  : term ((+ | -) term)*
+```
+
 ### Classes
 
 #### Token
