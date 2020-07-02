@@ -12,7 +12,7 @@ Interpreter Code
 #### Grammar
 - [Complete Grammar](https://github.com/maldonadoq/cassian/blob/master/grammar.txt)
 ```txt
-expr        :var ident = expr
+expr        : var ident = expr
             : comp-expr ((and|or) comp-expr) *
 comp-expr   : not comp-expr
             : arith-expr ((== | < | > | <= | >=) arith-expr) *

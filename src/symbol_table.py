@@ -1,6 +1,6 @@
 class SymbolTable:
 	def __init__(self, parent=None):
-		self.symbols = {}
+		self.symbols = dict()
 		self.parent = parent
 
 	def get(self, name):
@@ -16,3 +16,14 @@ class SymbolTable:
 
 	def remove(self, name):
 		del self.symbols[name]
+
+	def __repr__(self):
+		st = ''
+
+		for i, s in enumerate(self.symbols):
+			if(i == len(self.symbols) - 1):
+				st += '  {:6} : {}'.format(s, self.symbols[s])
+			else:
+				st += '  {:6} : {}\n'.format(s, self.symbols[s])
+
+		return st

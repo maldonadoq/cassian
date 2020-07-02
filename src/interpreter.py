@@ -11,6 +11,16 @@ class Context:
 		self.parent_entry_pos = parent_entry_pos
 		self.symbol_table = None
 
+	def restart(self, initials):
+		symb_remove = []
+		
+		for symb in self.symbol_table.symbols:
+			if(symb not in initials):
+				symb_remove.append(symb)
+		
+		for symb in symb_remove:
+			self.symbol_table.remove(symb)
+
 class Function(Value):
 	def __init__(self, name, body_node, arg_names):
 		super().__init__()

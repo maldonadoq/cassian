@@ -7,9 +7,9 @@ from src.interpreter import Interpreter, Context
 from src.symbol_table import SymbolTable
 
 symb_table = SymbolTable()
-symb_table.set("null", Number(0))
-symb_table.set("false", Number(0))
-symb_table.set("true", Number(1))
+symb_table.set('null', Number(0))
+symb_table.set('false', Number(0))
+symb_table.set('true', Number(1))
 
 if __name__ == "__main__":
 	lex = Lexer()
@@ -23,6 +23,12 @@ if __name__ == "__main__":
 
 		if(line == ':q'):
 			break
+		elif(line == 'st'):
+			print(ctx.symbol_table)
+			continue
+		elif(line == 'cls'):
+			ctx.restart(['null', 'false', 'true'])
+			continue
 
 		tokens, error = lex.scanner('<stdin>', line)
 
