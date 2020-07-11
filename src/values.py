@@ -187,7 +187,7 @@ class String(Value):
 		super().__init__()
 		self.value = value
 
-	def added_by(sel, other):
+	def added_by(self, other):
 		if(isinstance(other, String)):
 			return String(self.value + other.value).set_context(self.context), None
 		else:

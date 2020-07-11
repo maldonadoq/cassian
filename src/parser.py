@@ -343,11 +343,11 @@ class Parser:
 		if(token.type in (Type.tint.name, Type.tfloat.name)):
 			res.register_advancement()
 			self.advance()
-			return res.success(StringNode(token))
+			return res.success(NumberNode(token))
 		elif(token.type == Type.tstring.name):
 			res.register_advancement()
 			self.advance()
-			return res.success(NumberNode(token))
+			return res.success(StringNode(token))
 		elif(token.type == Type.tident.name):
 			res.register_advancement()
 			self.advance()

@@ -1,5 +1,5 @@
 from .token import Type
-from .values import Value, Number
+from .values import Value, Number, String
 from .results import RunTimeResult
 from .errors import RunTimeError
 from .symbol_table import SymbolTable
@@ -84,6 +84,11 @@ class Interpreter:
 	def visit_NumberNode(self, node, context):
 		return RunTimeResult().success(
 			Number(node.token.value).set_context(context).set_pos(node.pos_start, node.pos_end)
+		)
+
+	def visit_StringNode(self, node, context):
+		return RunTimeResult().success(
+			String(node.token.value).set_context(context).set_pos(node.pos_start, node.pos_end)
 		)
 
 	def visit_VarAccessNode(self, node, context):
