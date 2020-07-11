@@ -1,5 +1,5 @@
 from .token import Type
-from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode, CallNode, FunctionNode
+from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode, CallNode, FunctionNode, StringNode
 from .errors import InvalidSyntaxError
 from .results import ParseResult
 
@@ -341,6 +341,10 @@ class Parser:
 		token = self.current_token
 
 		if(token.type in (Type.tint.name, Type.tfloat.name)):
+			res.register_advancement()
+			self.advance()
+			return res.success(StringNode(token))
+		elif(token.type == Type.tstring.name):
 			res.register_advancement()
 			self.advance()
 			return res.success(NumberNode(token))
