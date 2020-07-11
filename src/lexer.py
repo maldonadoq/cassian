@@ -135,6 +135,31 @@ class Lexer:
 
 		return Token(token_type, pos_start=pos_start, pos_end=self.pos)
 
+	def getString(self):
+		stri = ''
+		pos_start = self.pos.copy()
+		escape = False
+		self.advance()
+
+		escapes = {
+			'n': '\n',
+			't': '\t'
+		}
+
+		while((self.current_char != None) and (self.current_char != '"' or escape)):
+			if(escape):
+				stri += escapes.get(self.current_char, self.current_char)
+			else:
+				if(self.current_char == '\\'):
+					escape = True
+				else:
+					stri += self.current_char
+			self.advance()
+			escape = False
+
+		self.advance()
+		return Token(Type.tstring.name, stri, pos_start, self.pos)
+
 	def scanner(self, fn, text):
 		self.clear(fn, text)
 
@@ -146,6 +171,8 @@ class Lexer:
 				tokens.append(self.getNumber())
 			elif(self.current_char in letters):
 				tokens.append(self.getIdentifier())
+			elif(self.current_char == '"'):
+				tokens.append(self.getString())
 			elif(self.current_char == '+'):
 				tokens.append(Token(Type.tplus.name, pos_start=self.pos))
 				self.advance()

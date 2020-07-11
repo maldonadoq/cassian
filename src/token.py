@@ -23,6 +23,7 @@ class Type(enum.Enum):
 	tgte = 19
 	tcomma = 20
 	tarrow = 21
+	tstring = 22
 
 class Token:
 	def __init__(self, _type, value=None, pos_start=None, pos_end=None):
