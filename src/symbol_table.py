@@ -22,8 +22,8 @@ class SymbolTable:
 
 		for i, s in enumerate(self.symbols):
 			if(i == len(self.symbols) - 1):
-				st += '  {:6} : {}'.format(s, self.symbols[s])
+				st += '  {:10} : {}'.format(s, self.symbols[s])
 			else:
-				st += '  {:6} : {}\n'.format(s, self.symbols[s])
+				st += '  {:10} : {}\n'.format(s, self.symbols[s])
 
 		return st

@@ -14,11 +14,58 @@ class Parser:
 
 	def advance(self):
 		self.token_idx += 1
-
-		if(self.token_idx < len(self.tokens)):
-			self.current_token = self.tokens[self.token_idx]
+		self.update_current_token()
 		
 		return self.current_token
+
+	def reverse(self, amount=1):
+		self.token_idx -= amount
+		self.update_current_token()
+
+		return self.current_token
+
+	def update_current_token(self):
+		if(self.token_idx >= 0 and self.token_idx < len(self.tokens)):
+			self.current_token = self.tokens[self.token_idx]
+
+	def statements(self):
+		res = ParseResult()
+		statements = []
+		pos_start = self.current_token.pos_start.copy()
+
+		while self.current_token.type == Type.tnewline.name:
+			res.register_advancement()
+			self.advance()
+
+		statement = res.register(self.expr())
+		if res.error:
+			return res
+		statements.append(statement)
+
+		more_statements = True
+
+		while True:
+			newline_count = 0
+			while self.current_token.type == Type.tnewline.name:
+				res.register_advancement()
+				self.advance()
+				newline_count += 1
+			if newline_count == 0:
+				more_statements = False
+
+			if not more_statements: break
+			statement = res.try_register(self.expr())
+			if not statement:
+				self.reverse(res.to_reverse_count)
+				more_statements = False
+				continue
+			statements.append(statement)
+
+		return res.success(ListNode(
+			statements,
+			pos_start,
+			self.current_token.pos_end.copy()
+		))
 
 	def list_expr(self):
 		res = ParseResult()
@@ -585,8 +632,7 @@ class Parser:
 
 		self.clear(tokens)
 
-		res = self.expr()
-
+		res = self.statements()
 		if(not res.error and self.current_token.type != Type.teof.name):
 			return res.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,

@@ -25,6 +25,7 @@ class Type(enum.Enum):
 	tstring = 22
 	tlsqu = 23
 	trsqu = 24
+	tnewline = 25
 
 class Token:
 	def __init__(self, _type, value=None, pos_start=None, pos_end=None):

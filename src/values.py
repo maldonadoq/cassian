@@ -2,6 +2,8 @@ from .errors import RunTimeError
 from .results import RunTimeResult
 from .symbol_table import SymbolTable
 
+from math import pi
+
 class Value:
 	def __init__(self):
 		self.set_pos()
@@ -180,6 +182,12 @@ class Number(Value):
 	
 	def __repr__(self):
 		return str(self.value)
+
+
+Number.null = Number(0)
+Number.false = Number(0)
+Number.true = Number(1)
+Number.math_PI = Number(pi)
 
 
 class String(Value):

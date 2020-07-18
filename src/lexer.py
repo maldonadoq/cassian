@@ -21,7 +21,8 @@ keywords = [
 	'to',
 	'step',
 	'while',
-	'fun'
+	'fun',
+	'end'
 ]
 
 class Lexer:
@@ -166,6 +167,9 @@ class Lexer:
 		tokens = []
 		while(self.current_char != None):
 			if(self.current_char in ' \t'):
+				self.advance()
+			elif(self.current_char in ';\n'):
+				tokens.append(Token(Type.tnewline.name, pos_start=self.pos))
 				self.advance()
 			elif(self.current_char in digits):
 				tokens.append(self.getNumber())
