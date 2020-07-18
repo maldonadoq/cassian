@@ -193,6 +193,12 @@ class Lexer:
 			elif(self.current_char == ')'):
 				tokens.append(Token(Type.trpar.name, pos_start=self.pos))
 				self.advance()
+			elif(self.current_char == '['):
+				tokens.append(Token(Type.tlsqu.name, pos_start=self.pos))
+				self.advance()
+			elif(self.current_char == ']'):
+				tokens.append(Token(Type.trsqu.name, pos_start=self.pos))
+				self.advance()
 			elif(self.current_char == '!'):
 				token, err = self.getNotEqual()
 				if(err):

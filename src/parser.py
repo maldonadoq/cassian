@@ -1,5 +1,5 @@
 from .token import Type
-from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode, CallNode, FunctionNode, StringNode
+from .nodes import NumberNode, BinOpNode, UnaryOpNode, VarAssignNode, VarAccessNode, IfNode, ForNode, WhileNode, CallNode, FunctionNode, StringNode, ListNode
 from .errors import InvalidSyntaxError
 from .results import ParseResult
 
@@ -19,6 +19,55 @@ class Parser:
 			self.current_token = self.tokens[self.token_idx]
 		
 		return self.current_token
+
+	def list_expr(self):
+		res = ParseResult()
+		element_nodes = []
+		pos_start = self.current_token.pos_start.copy()
+
+		if(self.current_token.type != Type.tlsqu.name):
+			return res.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected '['"
+			))
+		
+		res.register_advancement()
+		self.advance()
+
+		if(self.current_token.type == Type.trsqu.name):
+			res.register_advancement()
+			self.advance()
+		else:
+			element_nodes.append(res.register(self.expr()))
+			if(res.error):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected ']', 'var', 'if', 'for', 'while', 'fun', int, float, ident, '+', '-', '(', '[' or 'not'"
+				))
+			
+			while(self.current_token.type == Type.tcomma.name):
+				res.register_advancement()
+				self.advance()
+
+				element_nodes.append(res.register(self.expr()))
+
+				if(res.error):
+					return res
+				
+			if(self.current_token.type != Type.trsqu.name):
+				return res.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected ',' or ']'"
+				))
+
+			res.register_advancement()
+			self.advance()
+		
+		return res.success(ListNode(
+			element_nodes,
+			pos_start,
+			self.current_token.pos_end.copy()
+		))
 
 	def if_expr(self):
 		res = ParseResult()
@@ -311,7 +360,7 @@ class Parser:
 				if(res.error):
 					return res.failure(InvalidSyntaxError(
 						self.current_token.pos_start, self.current_token.pos_end,
-						"Expected ')', 'var', 'if', 'for', 'while', 'fun', int, float, ident"
+						"Expected ')', 'var', 'if', 'for', 'while', 'fun', int, float, ident, '+', '-', '(', '[',] or 'not'"
 					))
 				
 				while(self.current_token.type == Type.tcomma.name):
@@ -370,6 +419,14 @@ class Parser:
 					self.current_token.pos_start, self.current_token.pos_end,
 					"Expected ')'"
 				))
+		
+		elif(token.type == Type.tlsqu.name):
+			list_expr = res.register(self.list_expr())
+
+			if(res.error):
+				return res
+
+			return res.success(list_expr)
 
 		elif(token.matches(Type.tkeyword.name, 'if')):
 			if_expr = res.register(self.if_expr())
@@ -405,7 +462,7 @@ class Parser:
 		
 		return res.failure(InvalidSyntaxError(
 			token.pos_start, token.pos_end,
-			"Expected Int, Float, Identifier, 'var', '+', '-' or '('"
+			"Expected Int, Float, Identifier, 'var', '+', '-' or '(', '[', 'if', 'for','while' or 'fun'"
 		))
 	
 	def power(self):
@@ -453,7 +510,7 @@ class Parser:
 		if(res.error):
 			return res.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
-				"Expected Int, Float, Identifier, 'var', '+', '-', '(', 'not'"
+				"Expected Int, Float, Identifier, 'var', '+', '-', '(', '[' or 'not'"
 			))
 
 		return res.success(node)
@@ -495,7 +552,7 @@ class Parser:
 		if(res.error):
 			return res.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
-				"Expected 'var', int, float, identifier, '+', '-' or '(' or 'not'"
+				"Expected 'var', int, float, identifier, '+', '-', '(', '[' or 'not'"
 			))
 
 		return res.success(node)
