@@ -15,6 +15,4 @@ atom 		: int | float | string |ident
 			: func-def
 list-expr	: lsqu (expr (comma expr)*)? rsqu
 if-expr		: if expr then expr (elif expr then expr)* (else expr)?
-for-expr	: for ident = expr to expr (step expr)? then expr
-while-expr	: while expr then expr
 func-def	: fun ident? lpar (ident (comma ident)*)? rpar arrow expr
