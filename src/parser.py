@@ -632,7 +632,8 @@ class Parser:
 
 		self.clear(tokens)
 
-		res = self.statements()
+		# res = self.statements()
+		res = self.expr()
 		if(not res.error and self.current_token.type != Type.teof.name):
 			return res.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
