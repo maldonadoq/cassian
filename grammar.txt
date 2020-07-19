@@ -1,18 +1,20 @@
-expr        : var ident = expr
-	        : comp-expr ((and|or) comp-expr) *
+expr		: var ident = expr
+			: comp-expr ((and|or) comp-expr) *
 comp-expr	: not comp-expr
 			: arith-expr ((== | < | > | <= | >=) arith-expr) *
 arith-expr	: term ((+ | -) term)*
 term		: factor ((* | /) factor)*
 factor		: (+ | -) factor
 			: power
-power		: call (power factor)*
+power		: call (^ factor)*
 call		: atom (lpar (expr (comma expr)*)? rpar)?
-atom 		: int | float | ident
+atom 		: int | float | string |ident
 			: lpar expr rpar
+			: list-expr
 			: if-expr
-			: for-expr
-			: while-expr
+			: func-def
+list-expr	: lsqu (expr (comma expr)*)? rsqu
 if-expr		: if expr then expr (elif expr then expr)* (else expr)?
 for-expr	: for ident = expr to expr (step expr)? then expr
 while-expr	: while expr then expr
+func-def	: fun ident? lpar (ident (comma ident)*)? rpar arrow expr
